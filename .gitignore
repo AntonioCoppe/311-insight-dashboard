@@ -1,1 +1,55 @@
+# Node.js dependencies
+
+node\_modules/
+
+# Logs
+
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log\*
+pnpm-debug.log\*
+
+# Environment files
+
 .env
+.env.local
+.env.\*.local
+
+# Backend
+
+/src/backend/node\_modules/
+/src/backend/.env
+
+# Frontend
+
+/src/frontend/node\_modules/
+/src/frontend/.env
+
+# Frontend build output
+
+/src/frontend/build/
+
+# Distribution directories
+
+dist/
+coverage/
+
+# Python
+
+**pycache**/
+\*.py\[cod]
+
+# OS files
+
+.DS\_Store
+Thumbs.db
+
+# IDEs and editors
+
+.vscode/
+.idea/
+\*.suo
+*.ntvs*
+\*.njsproj
+\*.sln
