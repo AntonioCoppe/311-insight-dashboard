@@ -1,13 +1,12 @@
 # render.yaml
 
-# 1. A managed Postgres database
+# 1. Managed Postgres database
 databases:
   - name: insight-postgres
     plan: free
 
-# 2–4. All other things live under services:
 services:
-  # 2. A managed Redis (KeyValue) instance
+  # 2. Managed Redis (KeyValue)
   - type: keyvalue
     name: insight-redis
     plan: free
@@ -15,13 +14,12 @@ services:
       - source: 0.0.0.0/0
         description: "Allow all"
 
-  # 3. Your Node.js backend
+  # 3. Node.js backend
   - type: web
     name: insight-backend
     runtime: node
     plan: free
-    region: oregon
-    repo: AntonioCoppe/311-insight-dashboard
+    repo: https://github.com/AntonioCoppe/311-insight-dashboard.git
     branch: main
     buildCommand: |
       cd src/backend
@@ -36,24 +34,21 @@ services:
           property: connectionString
       - key: REDIS_HOST
         fromService:
-          type: keyvalue
           name: insight-redis
           property: host
       - key: REDIS_PORT
         fromService:
-          type: keyvalue
           name: insight-redis
           property: port
       - key: PORT
         value: "3000"
 
-  # 4. Your React frontend as a static site
-  - type: web
+  # 4. React frontend (static site)
+  - type: static_site
     name: insight-frontend
     runtime: static
     plan: free
-    region: oregon
-    repo: AntonioCoppe/311-insight-dashboard
+    repo: https://github.com/AntonioCoppe/311-insight-dashboard.git
     branch: main
     buildCommand: |
       cd src/frontend
