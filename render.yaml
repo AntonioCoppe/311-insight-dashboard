@@ -1,54 +1,65 @@
 # render.yaml
 
-# 1. Managed Postgres (type "postgres")
-- type: postgres
-  name: insight-postgres
-  plan: free
+# 1. A managed Postgres database
+databases:
+  - name: insight-postgres
+    plan: free
 
-# 2. Managed Redis
-- type: redis
-  name: insight-redis
-  plan: free
+# 2–4. All other things live under services:
+services:
+  # 2. A managed Redis (KeyValue) instance
+  - type: keyvalue
+    name: insight-redis
+    plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: "Allow all"
 
-# 3. Your Node.js backend
-- type: web_service
-  name: insight-backend
-  env: node
-  plan: free
-  region: oregon
-  repo: AntonioCoppe/311-insight-dashboard
-  branch: main
-  buildCommand: |
-    cd src/backend
-    npm install
-  startCommand: |
-    cd src/backend
-    node app.js
-  envVars:
-    - key: DATABASE_URL
-      fromDatabase:
-        name: insight-postgres
-        property: connectionString
-    - key: REDIS_URL
-      fromDatabase:
-        name: insight-redis
-        property: connectionString
-    - key: PORT
-      value: "3000"
+  # 3. Your Node.js backend
+  - type: web
+    name: insight-backend
+    runtime: node
+    plan: free
+    region: oregon
+    repo: AntonioCoppe/311-insight-dashboard
+    branch: main
+    buildCommand: |
+      cd src/backend
+      npm install
+    startCommand: |
+      cd src/backend
+      node app.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: insight-postgres
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: insight-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: insight-redis
+          property: port
+      - key: PORT
+        value: "3000"
 
-# 4. Your React frontend
-- type: static_site
-  name: insight-frontend
-  env: static
-  plan: free
-  region: oregon
-  repo: AntonioCoppe/311-insight-dashboard
-  branch: main
-  buildCommand: |
-    cd src/frontend
-    npm install
-    npm run build
-  publishPath: src/frontend/build
-  envVars:
-    - key: REACT_APP_API_URL
-      value: "https://insight-backend.onrender.com/api"
+  # 4. Your React frontend as a static site
+  - type: web
+    name: insight-frontend
+    runtime: static
+    plan: free
+    region: oregon
+    repo: AntonioCoppe/311-insight-dashboard
+    branch: main
+    buildCommand: |
+      cd src/frontend
+      npm install
+      npm run build
+    staticPublishPath: src/frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: "https://insight-backend.onrender.com/api"
