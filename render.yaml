@@ -1,24 +1,25 @@
 # render.yaml
 
-# 1. Managed Postgres database
+# 1. A managed Postgres instance
 databases:
   - name: insight-postgres
     plan: free
 
 services:
-  # 2. Managed Redis (KeyValue)
+  # 2. A managed Redis key/value store
   - type: keyvalue
     name: insight-redis
     plan: free
     ipAllowList:
       - source: 0.0.0.0/0
-        description: "Allow all"
+        description: Allow all
 
   # 3. Node.js backend
   - type: web
     name: insight-backend
     runtime: node
     plan: free
+    region: oregon
     repo: https://github.com/AntonioCoppe/311-insight-dashboard.git
     branch: main
     buildCommand: |
@@ -44,7 +45,7 @@ services:
         value: "3000"
 
   # 4. React frontend (static site)
-  - type: static_site
+  - type: web
     name: insight-frontend
     runtime: static
     plan: free
