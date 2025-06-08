@@ -113,6 +113,23 @@ app.get('/api/requests/map', async (req, res) => {
   }
 });
 
+// GET /api/requests/types
+app.get('/api/requests/types', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT DISTINCT request_type
+      FROM requests
+      ORDER BY request_type
+    `);
+    // rows is [{ request_type: 'Graffiti' }, { request_type: 'Fireworks' }, …]
+    res.json(rows.map(r => r.request_type));
+  } catch (err) {
+    console.error('Error fetching types:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Health check
 app.get('/health', (req, res) => res.send('OK'));
 
