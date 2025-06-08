@@ -1,0 +1,54 @@
+# render.yaml
+services:
+  # 1. Managed Postgres
+  - type: postgresql
+    name: insight-postgres
+    plan: free
+
+  # 2. Managed Redis
+  - type: redis
+    name: insight-redis
+    plan: free
+
+  # 3. Your Node.js backend
+  - type: web_service
+    name: insight-backend
+    env: node
+    plan: free
+    region: oregon
+    repo: AntonioCoppe/311-insight-dashboard
+    branch: main
+    buildCommand: |
+      cd src/backend
+      npm install
+    startCommand: |
+      cd src/backend
+      node app.js
+    envVars:
+      - key: DATABASE_URL
+        fromService:
+          name: insight-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: insight-redis
+          property: connectionString
+      - key: PORT
+        value: "3000"
+
+  # 4. Your React frontend as a static site
+  - type: static_site
+    name: insight-frontend
+    env: static
+    plan: free
+    region: oregon
+    repo: AntonioCoppe/311-insight-dashboard
+    branch: main
+    buildCommand: |
+      cd src/frontend
+      npm install
+      npm run build
+    publishPath: src/frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: "https://insight-backend.onrender.com/api"
