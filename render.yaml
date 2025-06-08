@@ -1,7 +1,7 @@
 # render.yaml
 
-# 1. Managed Postgres
-- type: postgresql
+# 1. Managed Postgres (type "postgres")
+- type: postgres
   name: insight-postgres
   plan: free
 
