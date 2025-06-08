@@ -1,16 +1,14 @@
-# render.yaml
-services:
-  # 1. Managed Postgres
+databases:
   - type: postgresql
     name: insight-postgres
     plan: free
 
-  # 2. Managed Redis
+caches:
   - type: redis
     name: insight-redis
     plan: free
 
-  # 3. Your Node.js backend
+services:
   - type: web_service
     name: insight-backend
     env: node
@@ -26,17 +24,17 @@ services:
       node app.js
     envVars:
       - key: DATABASE_URL
-        fromService:
+        fromDatabase:
           name: insight-postgres
           property: connectionString
       - key: REDIS_URL
-        fromService:
+        fromDatabase:
           name: insight-redis
           property: connectionString
       - key: PORT
         value: "3000"
 
-  # 4. Your React frontend as a static site
+staticSites:
   - type: static_site
     name: insight-frontend
     env: static
