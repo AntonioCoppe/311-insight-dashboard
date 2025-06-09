@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import { RecentBarChart } from './components/RecentBarChart';
-import { HistoricalLineChart } from './components/HistoricalLineChart';
+import HistoricalLineChart from './components/HistoricalLineChart';
 import { MapView } from './components/MapView';
 
 function App() {

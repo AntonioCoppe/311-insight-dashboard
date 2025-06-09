@@ -1,23 +1,51 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/build
-
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
+# Node.js
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnp/
+.pnp.js
+
+# Build outputs
+/build/
+dist/
+coverage/
+
+# Backend
+/src/backend/node_modules/
+/src/backend/.env
+/src/backend/*.log
+
+# Frontend
+/src/frontend/node_modules/
+/src/frontend/.env
+/src/frontend/build/
+/src/frontend/*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# Shapefiles and data
+/data/*.shp
+/data/*.dbf
+/data/*.shx
+/data/*.prj
+/src/data/postal_centroids_full.json
+
+# Environment files
+.env
+.env.*.local
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Mac and Windows
+.DS_Store
+Thumbs.db

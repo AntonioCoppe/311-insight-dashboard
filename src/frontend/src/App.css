@@ -36,3 +36,20 @@
     transform: rotate(360deg);
   }
 }
+
+
+.date-controls {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.date-controls label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.date-controls input[type="date"] {
+  margin-left: 0.3rem;
+  padding: 0.2rem;
+  font-size: 0.9rem;
+}
