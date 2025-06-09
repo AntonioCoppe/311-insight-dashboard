@@ -53,3 +53,12 @@ Thumbs.db
 *.ntvs*
 \*.njsproj
 \*.sln
+
+
+# Raw shapefiles / StatsCan FSAs
+data/*.shp
+data/*.dbf
+data/*.shx
+data/*.prj
+data/*.cpg
+data/*.zip
