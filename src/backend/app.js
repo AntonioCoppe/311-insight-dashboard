@@ -133,6 +133,8 @@ app.get('/api/requests/types', async (req, res) => {
 // Health check
 app.get('/health', (req, res) => res.send('OK'));
 
+// Only start server if invoked directly.
+// This lets us `require('../app')` in tests without auto‐binding to a port.
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Backend API running on http://localhost:${PORT}`);
