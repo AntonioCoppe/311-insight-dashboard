@@ -9,7 +9,12 @@ jest.mock('pg', () => {
 jest.mock('redis', () => ({ createClient: jest.fn() }));
 
 const { createClient } = require('redis');
-const redisMock = { connect: jest.fn(), get: jest.fn(), setEx: jest.fn() };
+// return a real (resolved) promise so .catch() exists
+const redisMock = {
+  connect: jest.fn().mockResolvedValue(),  
+  get:     jest.fn(),
+  setEx:   jest.fn()
+};
 createClient.mockReturnValue(redisMock);
 
 const { Pool } = require('pg');
