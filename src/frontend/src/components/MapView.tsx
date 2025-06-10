@@ -1,4 +1,3 @@
-// src/components/MapView.tsx
 // @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
@@ -6,6 +5,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import axios from 'axios';
 import { FeatureCollection } from '../api';
 import centroidData from '../data/postal_centroids.json';
+import LiquidGlassWrapper from './LiquidGlassWrapper';
 
 const TIMEFRAMES = [
   { label: 'Last 1 hour', minutes: 60 },
@@ -62,32 +62,37 @@ export function MapView() {
   const maxCount = Math.max(...counts, 1);
 
   return (
-    <div>
-      <label>
-        Category:&nbsp;
-        <select value={category} onChange={e => setCategory(e.target.value)}>
-          {types.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-      </label>
-      &nbsp;&nbsp;
-      <label>
-        Timeframe:&nbsp;
-        <select value={timeframe} onChange={e => setTimeframe(Number(e.target.value))}>
-          {TIMEFRAMES.map(tf => (
-            <option key={tf.minutes} value={tf.minutes}>{tf.label}</option>
-          ))}
-        </select>
-      </label>
+    <LiquidGlassWrapper className="map-card">
+      <div className="map-controls">
+        <label>
+          Category:&nbsp;
+          <select value={category} onChange={e => setCategory(e.target.value)}>
+            {types.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+        &nbsp;&nbsp;
+        <label>
+          Timeframe:&nbsp;
+          <select value={timeframe} onChange={e => setTimeframe(Number(e.target.value))}>
+            {TIMEFRAMES.map(tf => (
+              <option key={tf.minutes} value={tf.minutes}>{tf.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
 
-      <MapContainer center={DEFAULT_CENTER} zoom={11} style={{ height: '400px', width: '100%' }}>
+      <MapContainer
+        center={DEFAULT_CENTER}
+        zoom={11}
+        style={{ height: '400px', width: '100%' }}
+      >
         <TileLayer
           attribution="&copy; OpenStreetMap"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {geo.features.map((f, i) => {
-          // lookup center by postal area
           const coord = centroidData[f.properties.postal_area] || DEFAULT_CENTER;
-          const radius = 5 + (f.properties.count / maxCount) * 20; // scale radius
+          const radius = 5 + (f.properties.count / maxCount) * 20;
           const fillOpacity = Math.min(f.properties.count / maxCount, 0.8);
           return (
             <CircleMarker
@@ -103,6 +108,6 @@ export function MapView() {
           );
         })}
       </MapContainer>
-    </div>
+    </LiquidGlassWrapper>
   );
 }

@@ -1,55 +1,97 @@
+/* ==========================================================================
+   src/App.css — combines your layout, your original controls styles, 
+   plus all Liquid Glass effect stuff in one file.
+   ========================================================================== */
+
+/* ─────────── Base App Layout ─────────── */
 .App {
-  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* ─────────── Header / Menu Card ─────────── */
+.menu {
+  padding: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* ─────────── Dashboard Grid (3 columns) ─────────── */
+.dashboard-grid {
+  display: grid;
+  /* force exactly 3 equal columns */
+  grid-template-columns: repeat(1, 3fr);
+  gap: 1rem;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* ─────────── Card Wrappers ─────────── */
+.chart-card,
+.map-card,
+.historical-line-chart {
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  background: transparent; /* background is handled by LiquidGlass */
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-
+/* ─────────── Date & Map Controls ─────────── */
+/* (keep whatever you had originally) */
 .date-controls {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.map-controls {
+  margin-bottom: 0.5rem;
 }
 
-.date-controls label {
-  display: inline-flex;
-  align-items: center;
+/* ─────────── Error Message ─────────── */
+.error {
+  color: red;
+  margin-top: 0.5rem;
 }
 
-.date-controls input[type="date"] {
-  margin-left: 0.3rem;
-  padding: 0.2rem;
-  font-size: 0.9rem;
+/* ─────────── Liquid Glass Effect ─────────── */
+.liquidGlass-wrapper {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  border-radius: 1rem;
+  /* subtle frosted background; you can tweak the alpha */
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 6px 6px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+
+.liquidGlass-effect {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  backdrop-filter: blur(3px);
+  filter: url('#glass-distortion');
+  isolation: isolate;
+}
+
+.liquidGlass-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.liquidGlass-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-shadow:
+    inset 2px 2px 1px rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.liquidGlass-text {
+  position: relative;
+  z-index: 3;
+  width: 100%;
 }

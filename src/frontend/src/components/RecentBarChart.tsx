@@ -1,29 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+// src/components/RecentBarChart.tsx
+import React, { useState, useEffect } from 'react';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import LiquidGlassWrapper from './LiquidGlassWrapper';
 import { getRecent, RecentItem } from '../api';
 
-export function RecentBarChart() {
-  const [data, setData] = useState<RecentItem[]>([]);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export default function RecentBarChart() {
+  const [data, setData]       = useState<RecentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState<string | null>(null);
 
   useEffect(() => {
-    getRecent(60).then(rows => {
-      setData(rows);
-      setLoading(false);
-    });
+    // default is last 60 minutes; pass a different number if you like
+    getRecent()
+      .then(items => setData(items))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div>Loading recent data…</div>;
-  if (!data.length) return <div>No requests in the last hour.</div>;
+  const chartData = {
+    labels: data.map(d => d.request_type),
+    datasets: [
+      {
+        label: 'Last 60 minutes',
+        data: data.map(d => d.count),
+        backgroundColor: '#34c759',
+      },
+    ],
+  };
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
-        <XAxis dataKey="request_type" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="count" />
-      </BarChart>
-    </ResponsiveContainer>
+    <LiquidGlassWrapper className="chart-card">
+      {error && <div className="error">{error}</div>}
+      {loading
+        ? <div>Loading recent data…</div>
+        : <Bar data={chartData} />}
+    </LiquidGlassWrapper>
   );
 }

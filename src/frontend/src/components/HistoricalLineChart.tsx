@@ -12,6 +12,7 @@ import {
   Legend
 } from 'chart.js';
 import dayjs from 'dayjs';
+import LiquidGlassWrapper from './LiquidGlassWrapper';
 
 ChartJS.register(
   CategoryScale,
@@ -71,7 +72,7 @@ export default function HistoricalLineChart() {
   };
 
   return (
-    <div>
+    <LiquidGlassWrapper className="chart-card historical-line-chart">
       <div className="date-controls">
         <label>
           Start:{' '}
@@ -101,6 +102,6 @@ export default function HistoricalLineChart() {
       ) : (
         <Line data={chartData} />
       )}
-    </div>
+    </LiquidGlassWrapper>
   );
 }
