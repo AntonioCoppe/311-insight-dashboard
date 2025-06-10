@@ -1,6 +1,10 @@
+// src/components/HistoricalLineChart.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Line } from 'react-chartjs-2';
+import dayjs from 'dayjs';
+
+// Chart.js & Day.js adapter for v4
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,9 +13,13 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale,
+  type ChartOptions,    // ← import ChartOptions type
+  type TimeUnit         // ← import TimeUnit union
 } from 'chart.js';
-import dayjs from 'dayjs';
+import 'chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm';
+
 import LiquidGlassWrapper from './LiquidGlassWrapper';
 
 ChartJS.register(
@@ -21,18 +29,19 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale
 );
 
 export default function HistoricalLineChart() {
-  const today = dayjs().format('YYYY-MM-DD');
+  const today        = dayjs().format('YYYY-MM-DD');
   const sevenDaysAgo = dayjs().subtract(6, 'day').format('YYYY-MM-DD');
 
   const [startDate, setStartDate] = useState(sevenDaysAgo);
-  const [endDate, setEndDate] = useState(today);
-  const [data, setData] = useState<{ date: string; count: number }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [endDate,   setEndDate]   = useState(today);
+  const [data,      setData]      = useState<{ date: string; count: number }[]>([]);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchHistorical() {
@@ -58,17 +67,50 @@ export default function HistoricalLineChart() {
     fetchHistorical();
   }, [startDate, endDate]);
 
-  // Prepare Chart.js dataset
+  // Convert your data into the { x: Date, y: number } format
   const chartData = {
-    labels: data.map(d => dayjs(d.date).format('MMM D')),
     datasets: [
       {
         label: 'Requests',
-        data: data.map(d => d.count),
+        data: data.map(d => ({ x: d.date, y: d.count })),
         fill: false,
         tension: 0.2,
+        borderColor: '#007aff',
+        pointBackgroundColor: '#007aff',
       },
     ],
+  };
+
+  // *** Annotate as ChartOptions<'line'> ***
+  const options: ChartOptions<'line'> = {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          // 'day' is one of the allowed TimeUnit literals
+          unit: 'day' as TimeUnit,
+          tooltipFormat: 'MMM D, YYYY',
+          displayFormats: {
+            day: 'MMM D, YYYY',
+          },
+        },
+        title: {
+          display: true,
+          text: 'Date',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Number of Requests',
+        },
+      },
+    },
+    plugins: {
+      tooltip: {
+        // Chart.js will use our tooltipFormat above
+      },
+    },
   };
 
   return (
@@ -97,11 +139,10 @@ export default function HistoricalLineChart() {
       </div>
 
       {error && <div className="error">{error}</div>}
-      {loading ? (
-        <div>Loading historical data…</div>
-      ) : (
-        <Line data={chartData} />
-      )}
+      {loading
+        ? <div>Loading historical data…</div>
+        : <Line data={chartData} options={options} />
+      }
     </LiquidGlassWrapper>
   );
 }
