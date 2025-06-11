@@ -1,4 +1,3 @@
-// src/components/RecentBarChart.tsx
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -12,6 +11,7 @@ import {
 } from 'chart.js';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
 import { getRecent, RecentItem } from '../api';
+import { io, Socket } from 'socket.io-client';
 
 ChartJS.register(
   CategoryScale,
@@ -23,16 +23,28 @@ ChartJS.register(
 );
 
 export default function RecentBarChart() {
-  const [data, setData]       = useState<RecentItem[]>([]);
+  const [data, setData] = useState<RecentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // default is last 60 minutes; pass a different number if you like
+    const socket: Socket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000');
+    
+    // Initial data fetch
     getRecent()
       .then(items => setData(items))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
+
+    // Listen for real-time updates
+    socket.on('recentUpdate', (updatedData: RecentItem[]) => {
+      setData(updatedData);
+    });
+
+    // Cleanup function
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const chartData = {
