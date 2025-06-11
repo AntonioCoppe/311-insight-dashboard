@@ -6,6 +6,7 @@ import glob
 import csv
 import psycopg2
 from psycopg2.extras import execute_values
+import requests
 
 # 1) Load DATABASE_URL from your backend/.env
 from dotenv import load_dotenv
@@ -57,6 +58,18 @@ def load_file(cursor, path):
         # batch-insert in pages of 5000
         execute_values(cursor, sql, rows, page_size=5000)
 
+def notify_backend():
+    # Trigger backend update via WebSocket
+    api_url = os.environ.get('REACT_APP_API_URL', 'http://localhost:3000')
+    try:
+        response = requests.post(f"{api_url}/update-recent")
+        if response.status_code == 200:
+            print("Backend notified of update.")
+        else:
+            print(f"Failed to notify backend: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"Error notifying backend: {e}")
+
 def main():
     conn = psycopg2.connect(DB_URL)
     conn.autocommit = False
@@ -68,10 +81,12 @@ def main():
         for path in sorted(glob.glob('data/csv/SR*.csv')):
             load_file(cur, path)
             conn.commit()
+            notify_backend()  # Notify backend after each file commit
 
         print("All files loaded!")
-    except Exception:
+    except Exception as e:
         conn.rollback()
+        print(f"Error occurred: {e}")
         raise
     finally:
         cur.close()

@@ -1,32 +1,56 @@
-// src/backend/app.js
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
+console.log('Loaded REDIS_URL:', process.env.REDIS_URL); // Debug log
 const express = require('express');
 const { Pool } = require('pg');
 const { createClient } = require('redis');
-const dayjs = require('dayjs'); // light date parsing
+const dayjs = require('dayjs');
 const cors = require('cors');
-
+const { Server } = require('socket.io');
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+// Initialize Redis client
 const redis = createClient({ url: process.env.REDIS_URL });
-redis.connect().catch(console.error);
+
+redis.on('error', (err) => {
+  console.error('Redis Client Error:', err.message);
+});
+
+// Ensure Redis is connected before proceeding
+async function initializeRedis() {
+  try {
+    await redis.connect();
+    console.log('Redis connected successfully');
+  } catch (err) {
+    console.error('Failed to connect to Redis:', err.message);
+    process.exit(1); // Exit if Redis connection fails
+  }
+}
+
+initializeRedis();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(cors());
-
-
 app.use(express.json());
 
-// Helper: wrap route with caching
+const io = new Server({
+  cors: {
+    origin: process.env.REACT_APP_API_URL || 'http://localhost:3001',
+    methods: ['GET', 'POST'],
+  },
+});
+
 async function withCache(key, ttlSeconds, fetchFn) {
+  if (!redis.isOpen) {
+    await initializeRedis(); // Reconnect if not open
+  }
   const cached = await redis.get(key);
   if (cached) {
     return JSON.parse(cached);
   }
   const fresh = await fetchFn();
-  redis.setEx(key, ttlSeconds, JSON.stringify(fresh));
+  await redis.setEx(key, ttlSeconds, JSON.stringify(fresh)); // Ensure async
   return fresh;
 }
 
@@ -90,7 +114,6 @@ app.get('/api/requests/map', async (req, res) => {
     return res.status(400).json({ error: 'category query parameter is required' });
   }
 
-  // no caching here yet—optional later
   try {
     const { rows } = await pool.query(
       `SELECT postal_area, COUNT(*)::INT AS count
@@ -121,7 +144,6 @@ app.get('/api/requests/types', async (req, res) => {
       FROM requests
       ORDER BY request_type
     `);
-    // rows is [{ request_type: 'Graffiti' }, { request_type: 'Fireworks' }, …]
     res.json(rows.map(r => r.request_type));
   } catch (err) {
     console.error('Error fetching types:', err);
@@ -129,16 +151,37 @@ app.get('/api/requests/types', async (req, res) => {
   }
 });
 
+// New endpoint to trigger updates
+app.post('/update-recent', async (req, res) => {
+  await broadcastRecentUpdates();
+  res.send('Update triggered');
+});
+
+// Function to broadcast updates
+async function broadcastRecentUpdates(minutes = 60) {
+  if (!redis.isOpen) {
+    await initializeRedis(); // Reconnect if not open
+  }
+  await withCache(`recent:${minutes}`, 60, async () => {
+    const { rows } = await pool.query(
+      `SELECT request_type, COUNT(*)::INT AS count
+       FROM requests
+       WHERE created_at >= NOW() - INTERVAL '${minutes} minutes'
+       GROUP BY request_type
+       ORDER BY count DESC`
+    );
+    io.emit('recentUpdate', rows);
+  });
+}
 
 // Health check
 app.get('/health', (req, res) => res.send('OK'));
 
-// Only start server if invoked directly.
-// This lets us `require('../app')` in tests without auto‐binding to a port.
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Backend API running on http://localhost:${PORT}`);
   });
+  io.attach(server);
 }
 
-module.exports = app;
+module.exports = { app, io, broadcastRecentUpdates };
