@@ -4,7 +4,8 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import axios from 'axios';
 import { FeatureCollection } from '../api';
-import centroidData from '../data/postal_centroids.json';
+// ← point at your big file now:
+import centroidData from '../data/postal_centroids_canada.json';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
 
 const TIMEFRAMES = [
@@ -22,43 +23,52 @@ export function MapView() {
   const [category, setCategory] = useState<string>('');
   const [timeframe, setTimeframe] = useState<number>(TIMEFRAMES[0].minutes);
   const [geo, setGeo] = useState<FeatureCollection | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load available categories
+  // 1) load categories
   useEffect(() => {
-    axios.get<string[]>(`${process.env.REACT_APP_API_URL}/requests/types`)
-      .then(res => {
-        setTypes(res.data);
-        if (res.data.length) setCategory(res.data[0]);
-      })
-      .catch(err => console.error('Failed to fetch types:', err));
+    axios.get<string[]>(
+      `${process.env.REACT_APP_API_URL}/api/requests/types`
+    )
+    .then(res => {
+      setTypes(res.data);
+      if (res.data.length) setCategory(res.data[0]);
+    })
+    .catch(err => console.error('Failed to fetch types:', err));
   }, []);
 
-  // Load geo data when category or timeframe changes
+  // 2) load geo features
   useEffect(() => {
     if (!category) return;
     setLoading(true);
     setError(null);
+
     axios.get<FeatureCollection>(
-      `${process.env.REACT_APP_API_URL}/requests/map`,
+      `${process.env.REACT_APP_API_URL}/api/requests/map`,
       { params: { category, minutes: timeframe } }
     )
     .then(res => setGeo(res.data))
-    .catch(err => {
-      console.error('Error loading map data:', err);
-      setError('Failed to load map data');
-    })
+    .catch(() => setError('Failed to load map data'))
     .finally(() => setLoading(false));
   }, [category, timeframe]);
 
   if (!types.length) return <div>Loading categories…</div>;
-  if (loading) return <div>Loading map…</div>;
-  if (error) return <div>{error}</div>;
-  if (!geo?.features.length) return <div>No data for selected category/timeframe.</div>;
+  if (loading)       return <div>Loading map…</div>;
+  if (error)         return <div>{error}</div>;
+  if (!geo?.features.length) 
+                     return <div>No data for selected category/timeframe.</div>;
 
-  // Determine max count for scaling
-  const counts = geo.features.map(f => f.properties.count);
+  // filter out any postal_area we don't have centroids for
+  const validFeatures = geo.features.filter(f =>
+    typeof centroidData[f.properties.postal_area] !== 'undefined'
+  );
+  if (!validFeatures.length) {
+    return <div>No mappable data (all areas missing centroids).</div>;
+  }
+
+  // compute max for marker‐sizing
+  const counts   = validFeatures.map(f => f.properties.count);
   const maxCount = Math.max(...counts, 1);
 
   return (
@@ -73,9 +83,14 @@ export function MapView() {
         &nbsp;&nbsp;
         <label>
           Timeframe:&nbsp;
-          <select value={timeframe} onChange={e => setTimeframe(Number(e.target.value))}>
+          <select
+            value={timeframe}
+            onChange={e => setTimeframe(Number(e.target.value))}
+          >
             {TIMEFRAMES.map(tf => (
-              <option key={tf.minutes} value={tf.minutes}>{tf.label}</option>
+              <option key={tf.minutes} value={tf.minutes}>
+                {tf.label}
+              </option>
             ))}
           </select>
         </label>
@@ -90,16 +105,18 @@ export function MapView() {
           attribution="&copy; OpenStreetMap"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {geo.features.map((f, i) => {
-          const coord = centroidData[f.properties.postal_area] || DEFAULT_CENTER;
-          const radius = 5 + (f.properties.count / maxCount) * 20;
+
+        {validFeatures.map((f, i) => {
+          const coord     = centroidData[f.properties.postal_area] as [number,number];
+          const radius    = 5 + (f.properties.count / maxCount) * 20;
           const fillOpacity = Math.min(f.properties.count / maxCount, 0.8);
+
           return (
             <CircleMarker
               key={i}
               center={coord}
               radius={radius}
-              pathOptions={{ fillOpacity, color: '#007bff', fillColor: '#007bff' }}
+              pathOptions={{ color: '#007bff', fillColor: '#007bff', fillOpacity }}
             >
               <Popup>
                 {f.properties.postal_area}: {f.properties.count}

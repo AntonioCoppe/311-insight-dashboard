@@ -7,7 +7,7 @@ export function useRequestTypes() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get<string[]>(`${process.env.REACT_APP_API_URL}/requests/types`)
+    axios.get<string[]>(`${process.env.REACT_APP_API_URL}/api/requests/types`)
       .then(res => setTypes(res.data))
       .catch(err => setError('Failed to fetch request types'))
       .finally(() => setLoading(false));

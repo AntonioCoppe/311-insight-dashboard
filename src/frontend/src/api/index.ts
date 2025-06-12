@@ -12,7 +12,7 @@ export function getRecent(minutes = 60, types?: string[]) {
   if (types && types.length > 0) {
     params.types = types.join(',');
   }
-  return axios.get<RecentItem[]>(`${BASE}/requests/recent`, { params }).then(res => res.data);
+  return axios.get<RecentItem[]>(`${BASE}/api/requests/recent`, { params }).then(res => res.data);
 }
 
 export function getHistorical(start: string, end: string, types?: string[]) {
@@ -20,9 +20,9 @@ export function getHistorical(start: string, end: string, types?: string[]) {
   if (types && types.length > 0) {
     params.types = types.join(',');
   }
-  return axios.get<HistoricalItem[]>(`${BASE}/requests/historical`, { params }).then(res => res.data);
+  return axios.get<HistoricalItem[]>(`${BASE}/api/requests/historical`, { params }).then(res => res.data);
 }
 
 export function getMapData(category: string) {
-  return axios.get<FeatureCollection>(`${BASE}/requests/map`, { params: { category } }).then(res => res.data);
+  return axios.get<FeatureCollection>(`${BASE}/api/requests/map`, { params: { category } }).then(res => res.data);
 }

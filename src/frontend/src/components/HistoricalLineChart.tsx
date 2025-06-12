@@ -59,7 +59,7 @@ export default function HistoricalLineChart() {
       setLoading(true);
       try {
         const res = await axios.get<HistoricalItem[]>(
-          `${process.env.REACT_APP_API_URL}/requests/historical`,
+          `${process.env.REACT_APP_API_URL}/api/requests/historical`,
           { params: { start: startDate, end: endDate, types: selectedTypes.join(',') } }
         );
         setData(res.data);
