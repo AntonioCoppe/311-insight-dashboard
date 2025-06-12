@@ -1,10 +1,5 @@
-// src/components/HistoricalLineChart.tsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Line } from 'react-chartjs-2';
-import dayjs from 'dayjs';
-
-// Chart.js & Day.js adapter for v4
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,12 +10,15 @@ import {
   Tooltip,
   Legend,
   TimeScale,
-  type ChartOptions,    // ← import ChartOptions type
-  type TimeUnit         // ← import TimeUnit union
+  ChartOptions
 } from 'chart.js';
 import 'chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm';
-
+import axios from 'axios';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
+import dayjs from 'dayjs';
+import { useRequestTypes } from '../hooks/useRequestTypes';
+import Select from 'react-select';
+import { exportToCSV } from '../utils/exportToCSV';
 
 ChartJS.register(
   CategoryScale,
@@ -33,15 +31,23 @@ ChartJS.register(
   TimeScale
 );
 
+interface HistoricalItem {
+  date: string;
+  request_type?: string;
+  count: number;
+}
+
 export default function HistoricalLineChart() {
-  const today        = dayjs().format('YYYY-MM-DD');
+  const today = dayjs().format('YYYY-MM-DD');
   const sevenDaysAgo = dayjs().subtract(6, 'day').format('YYYY-MM-DD');
 
   const [startDate, setStartDate] = useState(sevenDaysAgo);
-  const [endDate,   setEndDate]   = useState(today);
-  const [data,      setData]      = useState<{ date: string; count: number }[]>([]);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState<string | null>(null);
+  const [endDate, setEndDate] = useState(today);
+  const [data, setData] = useState<HistoricalItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { types, loading: typesLoading, error: typesError } = useRequestTypes();
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchHistorical() {
@@ -52,9 +58,9 @@ export default function HistoricalLineChart() {
       setError(null);
       setLoading(true);
       try {
-        const res = await axios.get<{ date: string; count: number }[]>(
+        const res = await axios.get<HistoricalItem[]>(
           `${process.env.REACT_APP_API_URL}/requests/historical`,
-          { params: { start: startDate, end: endDate } }
+          { params: { start: startDate, end: endDate, types: selectedTypes.join(',') } }
         );
         setData(res.data);
       } catch (e) {
@@ -65,52 +71,73 @@ export default function HistoricalLineChart() {
       }
     }
     fetchHistorical();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, selectedTypes]);
 
-  // Convert your data into the { x: Date, y: number } format
-  const chartData = {
-    datasets: [
-      {
-        label: 'Requests',
-        data: data.map(d => ({ x: d.date, y: d.count })),
-        fill: false,
-        tension: 0.2,
-        borderColor: '#007aff',
-        pointBackgroundColor: '#007aff',
-      },
-    ],
+  const colors = ['#007aff', '#34c759', '#ff9500', '#ff2d55', '#5856d6'];
+  const getColorForType = (type: string) => {
+    const index = Math.abs(
+      type.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)
+    ) % colors.length;
+    return colors[index];
   };
 
-  // *** Annotate as ChartOptions<'line'> ***
+  // Filter out undefined, then build a unique string[] of types
+  const uniqueTypes = [
+    ...new Set(
+      data
+        .map(d => d.request_type)
+        .filter((t): t is string => t !== undefined)
+    )
+  ];
+
+  const chartData = {
+    datasets:
+      uniqueTypes.length > 0
+        ? uniqueTypes.map(type => ({
+            label: type,
+            data: data
+              .filter(d => d.request_type === type)
+              .map(d => ({ x: d.date, y: d.count })),
+            borderColor: getColorForType(type),
+            fill: false,
+            tension: 0.2,
+          }))
+        : [
+            {
+              label: 'All Requests',
+              data: data.map(d => ({ x: d.date, y: d.count })),
+              borderColor: '#007aff',
+              fill: false,
+              tension: 0.2,
+            },
+          ],
+  };
+
   const options: ChartOptions<'line'> = {
     scales: {
       x: {
         type: 'time',
         time: {
-          // 'day' is one of the allowed TimeUnit literals
-          unit: 'day' as TimeUnit,
+          unit: 'day',
           tooltipFormat: 'MMM D, YYYY',
-          displayFormats: {
-            day: 'MMM D, YYYY',
-          },
+          displayFormats: { day: 'MMM D, YYYY' },
         },
-        title: {
-          display: true,
-          text: 'Date',
-        },
+        title: { display: true, text: 'Date' },
       },
       y: {
-        title: {
-          display: true,
-          text: 'Number of Requests',
-        },
+        title: { display: true, text: 'Number of Requests' },
       },
     },
     plugins: {
-      tooltip: {
-        // Chart.js will use our tooltipFormat above
-      },
+      tooltip: {},
+      legend: { position: 'top' },
     },
+  };
+
+  const handleExport = () => {
+    const fields =
+      uniqueTypes.length > 0 ? ['date', 'request_type', 'count'] : ['date', 'count'];
+    exportToCSV(data, fields, 'historical_requests.csv');
   };
 
   return (
@@ -138,11 +165,26 @@ export default function HistoricalLineChart() {
         </label>
       </div>
 
+      {typesError && <div className="error">{typesError}</div>}
+      {!typesLoading && (
+        <Select
+          isMulti
+          options={types.map(t => ({ value: t, label: t }))}
+          value={selectedTypes.map(t => ({ value: t, label: t }))}
+          onChange={selected => setSelectedTypes(selected.map(s => s.value))}
+          placeholder="Select request types..."
+        />
+      )}
+
       {error && <div className="error">{error}</div>}
-      {loading
-        ? <div>Loading historical data…</div>
-        : <Line data={chartData} options={options} />
-      }
+
+      {loading ? (
+        <div>Loading historical data…</div>
+      ) : (
+        <Line data={chartData} options={options} />
+      )}
+
+      <button onClick={handleExport}>Export to CSV</button>
     </LiquidGlassWrapper>
   );
 }

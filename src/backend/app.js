@@ -10,11 +10,15 @@ const { Server } = require('socket.io');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Initialize Redis client
+// Initialize Redis client
 const redis = createClient({ url: process.env.REDIS_URL });
 
-redis.on('error', (err) => {
-  console.error('Redis Client Error:', err.message);
-});
+// only attach error‐handler if `on` is present
+if (typeof redis.on === 'function') {
+  redis.on('error', (err) => {
+    console.error('Redis Client Error:', err.message);
+  });
+}
 
 // Ensure Redis is connected before proceeding
 async function initializeRedis() {
@@ -36,9 +40,11 @@ app.use(express.json());
 
 const io = new Server({
   cors: {
-    origin: process.env.REACT_APP_API_URL || 'http://localhost:3001',
-    methods: ['GET', 'POST'],
-  },
+    // allow any origin (good for local/dev)
+    origin: '*',
+    methods: ['GET','POST'],
+    credentials: true
+  }
 });
 
 async function withCache(key, ttlSeconds, fetchFn) {
@@ -54,23 +60,30 @@ async function withCache(key, ttlSeconds, fetchFn) {
   return fresh;
 }
 
-// 1. Recent counts
+// 1. Recent counts with optional types filter
 app.get('/api/requests/recent', async (req, res) => {
   const minutes = parseInt(req.query.minutes || '60', 10);
+  const types = req.query.types ? req.query.types.split(',') : null;
   if (isNaN(minutes) || minutes <= 0 || minutes > 1440) {
     return res.status(400).json({ error: 'minutes must be a number between 1 and 1440' });
   }
 
-  const cacheKey = `recent:${minutes}`;
+  const since = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+  const cacheKey = `recent:${minutes}:${types ? types.join(',') : 'all'}`;
   try {
     const data = await withCache(cacheKey, 60, async () => {
-      const { rows } = await pool.query(
-        `SELECT request_type, COUNT(*)::INT AS count
-         FROM requests
-         WHERE created_at >= NOW() - INTERVAL '${minutes} minutes'
-         GROUP BY request_type
-         ORDER BY count DESC`
-      );
+      let query = `
+        SELECT request_type, COUNT(*)::INT AS count
+        FROM requests
+        WHERE created_at >= $1
+      `;
+      const params = [since];
+      if (types) {
+        query += ' AND request_type = ANY($2)';
+        params.push(types);
+      }
+      query += ' GROUP BY request_type ORDER BY count DESC';
+      const { rows } = await pool.query(query, params);
       return rows;
     });
     res.json(data);
@@ -80,24 +93,39 @@ app.get('/api/requests/recent', async (req, res) => {
   }
 });
 
-// 2. Historical counts
+// 2. Historical counts with optional types filter
 app.get('/api/requests/historical', async (req, res) => {
-  const { start, end } = req.query;
+  const { start, end, types } = req.query;
   if (!dayjs(start).isValid() || !dayjs(end).isValid() || dayjs(start).isAfter(end)) {
     return res.status(400).json({ error: 'start and end must be valid dates, start ≤ end' });
   }
 
-  const cacheKey = `historical:${start}:${end}`;
+  const typesArray = types ? types.split(',') : null;
+  const cacheKey = `historical:${start}:${end}:${types ? types : 'all'}`;
   try {
     const data = await withCache(cacheKey, 3600, async () => {
-      const { rows } = await pool.query(
-        `SELECT DATE(created_at) AS date, COUNT(*)::INT AS count
-         FROM requests
-         WHERE created_at BETWEEN $1::timestamp AND $2::timestamp
-         GROUP BY DATE(created_at)
-         ORDER BY date`,
-        [start, end]
-      );
+      let query;
+      let params = [start, end];
+      if (typesArray) {
+        query = `
+          SELECT DATE(created_at) AS date, request_type, COUNT(*)::INT AS count
+          FROM requests
+          WHERE created_at BETWEEN $1::timestamp AND $2::timestamp
+          AND request_type = ANY($3)
+          GROUP BY DATE(created_at), request_type
+          ORDER BY date, request_type
+        `;
+        params.push(typesArray);
+      } else {
+        query = `
+          SELECT DATE(created_at) AS date, COUNT(*)::INT AS count
+          FROM requests
+          WHERE created_at BETWEEN $1::timestamp AND $2::timestamp
+          GROUP BY DATE(created_at)
+          ORDER BY date
+        `;
+      }
+      const { rows } = await pool.query(query, params);
       return rows;
     });
     res.json(data);
@@ -107,7 +135,7 @@ app.get('/api/requests/historical', async (req, res) => {
   }
 });
 
-// 3. Map data
+// 3. Map data (unchanged)
 app.get('/api/requests/map', async (req, res) => {
   const category = req.query.category;
   if (!category) {
@@ -136,7 +164,7 @@ app.get('/api/requests/map', async (req, res) => {
   }
 });
 
-// GET /api/requests/types
+// GET /api/requests/types (unchanged)
 app.get('/api/requests/types', async (req, res) => {
   try {
     const { rows } = await pool.query(`
@@ -151,13 +179,13 @@ app.get('/api/requests/types', async (req, res) => {
   }
 });
 
-// New endpoint to trigger updates
+// New endpoint to trigger updates (unchanged)
 app.post('/update-recent', async (req, res) => {
   await broadcastRecentUpdates();
   res.send('Update triggered');
 });
 
-// Function to broadcast updates
+// Function to broadcast updates (unchanged)
 async function broadcastRecentUpdates(minutes = 60) {
   if (!redis.isOpen) {
     await initializeRedis(); // Reconnect if not open
@@ -174,7 +202,7 @@ async function broadcastRecentUpdates(minutes = 60) {
   });
 }
 
-// Health check
+// Health check (unchanged)
 app.get('/health', (req, res) => res.send('OK'));
 
 if (require.main === module) {
@@ -184,4 +212,8 @@ if (require.main === module) {
   io.attach(server);
 }
 
-module.exports = { app, io, broadcastRecentUpdates };
+// Export the Express app as the module itself, so `require('../app')` is the app
+module.exports = app;
+// Attach additional exports as properties
+module.exports.io = io;
+module.exports.broadcastRecentUpdates = broadcastRecentUpdates;

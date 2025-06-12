@@ -11,9 +11,10 @@ jest.mock('redis', () => ({ createClient: jest.fn() }));
 const { createClient } = require('redis');
 // return a real (resolved) promise so .catch() exists
 const redisMock = {
-  connect: jest.fn().mockResolvedValue(),  
+  connect: jest.fn().mockResolvedValue(),
   get:     jest.fn(),
-  setEx:   jest.fn()
+  setEx:   jest.fn(),
+  on:      jest.fn(),
 };
 createClient.mockReturnValue(redisMock);
 
@@ -87,3 +88,5 @@ describe('🚀 API Endpoints', () => {
     expect(res.body).toHaveProperty('error');
   });
 });
+
+
