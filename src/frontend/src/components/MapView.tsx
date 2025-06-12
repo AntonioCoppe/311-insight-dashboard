@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import axios from 'axios';
 import { FeatureCollection } from '../api';
 // ← point at your big file now:
-import centroidData from '../data/postal_centroids_canada.json';
+import centroidData from '../data/postal_centroids_full.json';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
 
 const TIMEFRAMES = [
