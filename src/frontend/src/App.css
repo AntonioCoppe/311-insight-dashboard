@@ -31,7 +31,7 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  background: transparent; /* background is handled by LiquidGlass */
+  background: transparent;
 }
 
 /* ─────────── Date & Map Controls ─────────── */
