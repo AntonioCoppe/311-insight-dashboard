@@ -5,6 +5,7 @@ import HistoricalLineChart from './components/HistoricalLineChart';
 import RecentBarChart    from './components/RecentBarChart';
 import { MapView }       from './components/MapView';
 import LiquidGlassWrapper from './components/LiquidGlassWrapper';
+import ThemeToggle from './components/ThemeToggle';
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
         {/* Header card */}
         <LiquidGlassWrapper className="menu">
           <h1>311 Insight Dashboard</h1>
+          <ThemeToggle />
         </LiquidGlassWrapper>
 
         {/* exactly three columns, back to original layout */}

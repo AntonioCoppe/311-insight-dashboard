@@ -4,8 +4,8 @@
   left: 0;
   width: 220px;
   height: 100vh;
-  background: linear-gradient(0deg, #ba54f5 0%, #e14eca 100%);
-  color: #fff;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-color);
   padding-top: 60px;
   z-index: 1000;
 }
@@ -22,7 +22,7 @@
 .sidebar-link {
   display: flex;
   align-items: center;
-  color: #fff;
+  color: var(--sidebar-color);
   padding: 0.5rem 1rem;
   margin-bottom: 0.5rem;
   border-radius: 0.375rem;
