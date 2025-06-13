@@ -4,8 +4,7 @@ const ThemeToggle: React.FC = () => {
   const [theme, setTheme] = useState<string>(() => localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
-    document.body.classList.remove('light', 'dark');
-    document.body.classList.add(theme);
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
