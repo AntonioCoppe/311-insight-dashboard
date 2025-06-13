@@ -1,6 +1,4 @@
-// src/App.tsx
-import React from 'react';
-import './App.css';                            // ← only this import, pulls in grid + glass styles
+import './App.css';
 import HistoricalLineChart from './components/HistoricalLineChart';
 import RecentBarChart    from './components/RecentBarChart';
 import { MapView }       from './components/MapView';
@@ -9,7 +7,6 @@ import LiquidGlassWrapper from './components/LiquidGlassWrapper';
 function App() {
   return (
     <>
-      {/* SVG filter, declared once for all LiquidGlassWrapper instances */}
       <svg style={{ display: 'none' }} xmlns="http://www.w3.org/2000/svg">
         <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
           <feTurbulence

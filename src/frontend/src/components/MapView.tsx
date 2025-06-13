@@ -4,7 +4,6 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import axios from 'axios';
 import { FeatureCollection } from '../api';
-// ← point at your big file now:
 import centroidData from '../data/postal_centroids_full.json';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
 
@@ -95,29 +94,15 @@ export function MapView() {
           </select>
         </label>
       </div>
-
-      <MapContainer
-        center={DEFAULT_CENTER}
-        zoom={11}
-        style={{ height: '400px', width: '100%' }}
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
+      <MapContainer center={DEFAULT_CENTER} zoom={11} style={{ height: '400px', width: '100%' }} >
+        <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {validFeatures.map((f, i) => {
           const coord     = centroidData[f.properties.postal_area] as [number,number];
           const radius    = 5 + (f.properties.count / maxCount) * 20;
           const fillOpacity = Math.min(f.properties.count / maxCount, 0.8);
-
+          
           return (
-            <CircleMarker
-              key={i}
-              center={coord}
-              radius={radius}
-              pathOptions={{ color: '#007bff', fillColor: '#007bff', fillOpacity }}
-            >
+            <CircleMarker key={i} center={coord} radius={radius} pathOptions={{ color: '#007bff', fillColor: '#007bff', fillOpacity }} >
               <Popup>
                 {f.properties.postal_area}: {f.properties.count}
               </Popup>

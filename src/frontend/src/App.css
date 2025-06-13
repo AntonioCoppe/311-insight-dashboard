@@ -20,7 +20,6 @@
 /* ─────────── Dashboard Grid (3 columns) ─────────── */
 .dashboard-grid {
   display: grid;
-  /* force exactly 3 equal columns */
   grid-template-columns: repeat(1, 3fr);
   gap: 1rem;
 }

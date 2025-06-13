@@ -5,11 +5,7 @@
  * @param fields   The keys (in order) to include as columns.
  * @param filename The .csv filename to download.
  */
-export function exportToCSV(
-  data: Record<string, any>[],
-  fields: string[],
-  filename: string
-) {
+export function exportToCSV(data: Record<string, any>[], fields: string[], filename: string) {
   // 1) Header row
   const header = fields.join(',');
 

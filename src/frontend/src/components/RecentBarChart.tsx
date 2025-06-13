@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
 import { getRecent, RecentItem } from '../api';
 import { useRequestTypes } from '../hooks/useRequestTypes';
@@ -16,14 +8,7 @@ import Select from 'react-select';
 import { exportToCSV } from '../utils/exportToCSV';
 import { io } from 'socket.io-client';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function RecentBarChart() {
   const [data, setData] = useState<RecentItem[]>([]);
@@ -51,7 +36,7 @@ export default function RecentBarChart() {
 
   useEffect(() => {
     setLoading(true);
-    getRecent(60, selectedTypes.length > 0 ? selectedTypes : undefined)
+    getRecent(360, selectedTypes.length > 0 ? selectedTypes : undefined)
       .then(items => setData(items))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
@@ -71,15 +56,7 @@ export default function RecentBarChart() {
   return (
     <LiquidGlassWrapper className="chart-card">
       {typesError && <div className="error">{typesError}</div>}
-      {!typesLoading && (
-        <Select
-          isMulti
-          options={types.map(t => ({ value: t, label: t }))}
-          value={selectedTypes.map(t => ({ value: t, label: t }))}
-          onChange={selected => setSelectedTypes(selected.map(s => s.value))}
-          placeholder="Select request types..."
-        />
-      )}
+      {!typesLoading && (<Select isMulti options={types.map(t => ({ value: t, label: t }))} value={selectedTypes.map(t => ({ value: t, label: t }))} onChange={selected => setSelectedTypes(selected.map(s => s.value))} placeholder="Select request types..." />)}
       {error && <div className="error">{error}</div>}
       {loading ? <div>Loading recent data…</div> : <Bar data={chartData} />}
       <button onClick={() => exportToCSV(data, ['request_type', 'count'], 'recent_requests.csv')}>Export to CSV</button>

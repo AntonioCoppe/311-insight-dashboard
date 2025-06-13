@@ -2,15 +2,9 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
-export interface SidebarRoute {
-  path: string;
-  name: string;
-  icon?: string;
-}
+export interface SidebarRoute { path: string; name: string; icon?: string; }
 
-interface SidebarProps {
-  routes: SidebarRoute[];
-}
+interface SidebarProps { routes: SidebarRoute[]; }
 
 const Sidebar: React.FC<SidebarProps> = ({ routes }) => (
   <div className="sidebar">

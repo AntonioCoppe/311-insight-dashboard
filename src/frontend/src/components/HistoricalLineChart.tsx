@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale,
-  ChartOptions
-} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale, ChartOptions } from 'chart.js';
 import 'chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm';
 import axios from 'axios';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
@@ -20,22 +9,9 @@ import { useRequestTypes } from '../hooks/useRequestTypes';
 import Select from 'react-select';
 import { exportToCSV } from '../utils/exportToCSV';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
 
-interface HistoricalItem {
-  date: string;
-  request_type?: string;
-  count: number;
-}
+interface HistoricalItem { date: string; request_type?: string; count: number; }
 
 export default function HistoricalLineChart() {
   const today = dayjs().format('YYYY-MM-DD');
@@ -94,23 +70,23 @@ export default function HistoricalLineChart() {
     datasets:
       uniqueTypes.length > 0
         ? uniqueTypes.map(type => ({
-            label: type,
-            data: data
-              .filter(d => d.request_type === type)
-              .map(d => ({ x: d.date, y: d.count })),
-            borderColor: getColorForType(type),
+          label: type,
+          data: data
+            .filter(d => d.request_type === type)
+            .map(d => ({ x: d.date, y: d.count })),
+          borderColor: getColorForType(type),
+          fill: false,
+          tension: 0.2,
+        }))
+        : [
+          {
+            label: 'All Requests',
+            data: data.map(d => ({ x: d.date, y: d.count })),
+            borderColor: '#007aff',
             fill: false,
             tension: 0.2,
-          }))
-        : [
-            {
-              label: 'All Requests',
-              data: data.map(d => ({ x: d.date, y: d.count })),
-              borderColor: '#007aff',
-              fill: false,
-              tension: 0.2,
-            },
-          ],
+          },
+        ],
   };
 
   const options: ChartOptions<'line'> = {
