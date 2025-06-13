@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm test --prefix src/backend && npm test --prefix src/frontend -- --watchAll=false"
   },
   "repository": {
     "type": "git",
