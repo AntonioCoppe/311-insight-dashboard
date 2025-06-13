@@ -10,7 +10,6 @@ const { Server } = require('socket.io');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Initialize Redis client
-// Initialize Redis client
 const redis = createClient({ url: process.env.REDIS_URL });
 
 // only attach error‐handler if `on` is present
