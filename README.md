@@ -131,6 +131,26 @@ A full-stack dashboard to visualize City of Toronto 311 service requests.
 * **Hot Reload**: Backend uses `nodemon` for auto-restart.
 * **Debugging**: Check browser console & network tab for API logs.
 
+## Testing
+
+Make sure the backend and frontend dependencies are installed before running
+tests.
+
+```bash
+# Backend dependencies
+cd src/backend && npm install && cd ../..
+
+# Frontend dependencies
+cd src/frontend && npm install && cd ../..
+
+```
+
+After installing dependencies, execute all tests from the repository root:
+
+```bash
+npm test
+```
+
 ## Contributing
 
 1. Fork and clone the repo.
