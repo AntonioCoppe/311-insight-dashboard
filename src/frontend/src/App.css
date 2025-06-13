@@ -5,8 +5,7 @@
 
 /* ─────────── Base App Layout ─────────── */
 .App {
-  max-width: 1200px;
-  margin: 0 auto;
+  margin-left: 240px; /* space for sidebar */
   padding: 1rem;
   font-family: sans-serif;
 }
