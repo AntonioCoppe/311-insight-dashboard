@@ -1,143 +1,105 @@
 # 311 Insight Dashboard
 
-A full-stack dashboard to visualize City of Toronto 311 service requests.
+A web application for exploring Toronto 311 service requests. The project includes scripts to ingest open data, a Node.js API with caching, and a React interface with interactive charts and maps.
+
+## Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Setup](#setup)
+- [Running the App](#running-the-app)
+- [Data Ingestion](#data-ingestion)
+- [Development](#development)
 
 ## Features
 
-* **Data Ingestion**: Pulls monthly CSVs and implements incremental loading into PostgreSQL.
-* **Backend API** (Node.js + Express + Redis):
+**Data ingestion**
+- Python script `scripts/load_requests.py` loads CSV files in `data/csv/` into PostgreSQL.
+- Optional `generate_centroids.py` produces postal code centroids for the map.
 
-  * `GET /api/requests/recent?minutes=`: Counts by request type for last *N* minutes.
-  * `GET /api/requests/historical?start=&end=`: Daily counts between two dates.
-  * `GET /api/requests/types`: Distinct request types.
-  * `GET /api/requests/map?category=&minutes=`: GeoJSON of counts by FSA.
-* **Frontend** (React + TypeScript + Leaflet):
+**Backend API** (`src/backend`)
+- Built with Express, PostgreSQL and Redis.
+- Endpoints:
+  - `GET /api/requests/recent?minutes=&types=` – counts by request type for the last N minutes.
+  - `GET /api/requests/historical?start=&end=&types=` – daily totals between two dates.
+  - `GET /api/requests/types` – list of available request types.
+  - `GET /api/requests/map?category=&minutes=` – GeoJSON of counts by postal FSA.
+- WebSocket updates via Socket.IO when new data is ingested.
 
-  * Interactive category & timeframe selectors.
-  * Scaled, geocoded markers (postal FSA centroids).
-  * Recharts for time-series and bar charts (in other components).
+**Frontend** (`src/frontend`)
+- React + TypeScript with Chart.js and Leaflet.
+- Line chart for historical trends, bar chart for recent activity and a map showing request density.
 
-## Repository Structure
+## Requirements
 
-```bash
-311-insight-dashboard/
-├── src/
-│   ├── backend/          # Express API service
-│   │   ├── app.js
-│   │   └── package.json
-│   ├── data-ingestion/   # Poller scripts & config
-│   ├── data/             # Static data files (postal centroids)
-│   │   └── postal_centroids.json
-│   └── frontend/         # React application
-│       ├── public/
-│       ├── src/
-│       │   ├── api/
-│       │   ├── components/
-│       │   └── App.tsx
-│       └── package.json
-├── .env                  # Environment variables
-├── .gitignore
-└── README.md
-```
+- Node.js 14 or higher
+- PostgreSQL and Redis
+- Python 3 (for data scripts)
+- GeoPandas if generating centroids
 
-## Prerequisites
+## Setup
 
-* Node.js (>= 14.x)
-* PostgreSQL
-* Redis
-* Python 3 + GeoPandas (for centroid generation)
-* `brew` (on macOS) for service management
-
-## Setup & Running
-
-1. **Clone the repo**
-
+1. **Clone the repository**
    ```bash
    git clone <repo-url>
    cd 311-insight-dashboard
    ```
-
-2. **Configure environment**
-
+2. **Configure environment variables**
    ```bash
-   cp .env.example .env
-   # Edit .env with your DATABASE_URL and REDIS_URL
+   cp .env.example src/backend/.env
+   # edit DATABASE_URL and REDIS_URL in src/backend/.env
    ```
-
 3. **Install dependencies**
-
    ```bash
-   # Backend
+   # backend
    cd src/backend && npm install && cd ../..
 
-   # Frontend
+   # frontend
    cd src/frontend && npm install && cd ../..
    ```
-
-4. **Initialize database**
-
-   ```sql
-   -- Connect as postgres superuser
-   CREATE USER insight_user WITH ENCRYPTED PASSWORD '<password>';
-   CREATE DATABASE insight311 OWNER insight_user;
-   \c insight311
-   CREATE TABLE requests (
-     id TEXT PRIMARY KEY,
-     request_type TEXT,
-     ward TEXT,
-     created_at TIMESTAMP,
-     closed_at TIMESTAMP,
-     postal_area TEXT,
-     description TEXT
-   );
+4. **Create the database**
+   ```bash
+   psql -f sql/create_requests_table.pgsql "$DATABASE_URL"
    ```
-
-5. **Generate postal centroids (optional)**
-
+5. **(Optional) generate postal centroids**
    ```bash
    pip install geopandas
    python generate_centroids.py
    ```
 
-6. **Start services**
+## Running the App
 
-   ```bash
-   # Redis
-   brew services start redis
+Start supporting services (PostgreSQL, Redis) then run:
 
-   # PostgreSQL (if not already running)
-   brew services start postgresql
-   ```
+```bash
+# backend API
+cd src/backend && npm start
+```
 
-7. **Run backend**
+In another terminal:
 
-   ```bash
-   node src/backend/app.js
-   ```
+```bash
+# frontend
+cd src/frontend && npm start
+```
 
-8. **Run frontend**
+The frontend runs on [http://localhost:3000](http://localhost:3000) and proxies API calls to the backend.
 
-   ```bash
-   cd src/frontend
-   npm start  # runs on 3001 by default, proxied to backend
-   ```
+## Data Ingestion
 
-9. **View**
-   Open [http://localhost:3001](http://localhost:3001) in your browser.
+Place yearly CSV files in `data/csv/` (e.g. `SR2025.csv`). Then run:
 
-## Development Tips
+```bash
+python scripts/load_requests.py
+```
 
-* **Linting & Formatting**: ESLint + Prettier can be added.
-* **Hot Reload**: Backend uses `nodemon` for auto-restart.
-* **Debugging**: Check browser console & network tab for API logs.
+Each file is loaded into the `requests` table and the backend is notified so connected clients update automatically.
 
-## Contributing
+## Development
 
-1. Fork and clone the repo.
-2. Create a feature branch: `git checkout -b feature/<name>`
-3. Commit changes: `git commit -m 'Add XYZ feature'`
-4. Push branch: `git push origin feature/<name>`
-5. Open a pull request.
+- Backend tests live in `src/backend/tests` and run with `npm test` inside `src/backend`.
+- The frontend was bootstrapped with Create React App.
+- Style and lint rules can be added as desired.
 
 ---
 
