@@ -64,6 +64,17 @@ describe('🚀 API Endpoints', () => {
     expect(res.body).toHaveProperty('error');
   });
 
+  test('GET /api/requests/yearly_top?year=2020 returns top 5', async () => {
+    redisMock.get.mockResolvedValueOnce(null);
+    poolMock.query.mockResolvedValueOnce({
+      rows: [{ request_type: 'A', count: 10 }]
+    });
+    const res = await request(app).get('/api/requests/yearly_top?year=2020');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([{ request_type: 'A', count: 10 }]);
+    expect(redisMock.setEx).toHaveBeenCalled();
+  });
+
   test('GET /api/requests/map?category=Graffiti returns geoJSON', async () => {
     poolMock.query.mockResolvedValueOnce({
       rows: [

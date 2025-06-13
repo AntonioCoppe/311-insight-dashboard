@@ -26,3 +26,9 @@ export function getHistorical(start: string, end: string, types?: string[]) {
 export function getMapData(category: string) {
   return axios.get<FeatureCollection>(`${BASE}/api/requests/map`, { params: { category } }).then(res => res.data);
 }
+
+export function getYearlyTop(year: number) {
+  return axios
+    .get<RecentItem[]>(`${BASE}/api/requests/yearly_top`, { params: { year } })
+    .then(res => res.data);
+}

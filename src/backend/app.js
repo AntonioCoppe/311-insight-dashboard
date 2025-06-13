@@ -135,6 +135,35 @@ app.get('/api/requests/historical', async (req, res) => {
   }
 });
 
+// 3. Yearly top 5 request types
+app.get('/api/requests/yearly_top', async (req, res) => {
+  const year = parseInt(req.query.year || new Date().getFullYear(), 10);
+  if (isNaN(year) || year < 2000 || year > 2100) {
+    return res.status(400).json({ error: 'year must be a valid number' });
+  }
+  const start = `${year}-01-01`;
+  const end = `${year + 1}-01-01`;
+  const cacheKey = `yearly_top:${year}`;
+  try {
+    const data = await withCache(cacheKey, 3600, async () => {
+      const { rows } = await pool.query(
+        `SELECT request_type, COUNT(*)::INT AS count
+         FROM requests
+         WHERE created_at >= $1::date AND created_at < $2::date
+         GROUP BY request_type
+         ORDER BY count DESC
+         LIMIT 5`,
+        [start, end]
+      );
+      return rows;
+    });
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // 3. Map data (unchanged)
 app.get('/api/requests/map', async (req, res) => {
   const category = req.query.category;

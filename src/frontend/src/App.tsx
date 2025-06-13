@@ -1,6 +1,6 @@
 import './App.css';
 import HistoricalLineChart from './components/HistoricalLineChart';
-import RecentBarChart from './components/RecentBarChart';
+import YearlyBarChart from './components/YearlyBarChart';
 import { MapView } from './components/MapView';
 import LiquidGlassWrapper from './components/LiquidGlassWrapper';
 
@@ -29,7 +29,7 @@ function App() {
         </LiquidGlassWrapper>
         <div className="dashboard-grid">
           <HistoricalLineChart />
-          <RecentBarChart />
+          <YearlyBarChart />
           <MapView />
         </div>
       </div>
