@@ -7,8 +7,12 @@ jest.mock('pg', () => {
 
 // Mocks for Redis
 jest.mock('redis', () => ({ createClient: jest.fn() }));
+jest.mock('nodemailer');
 
 const { createClient } = require('redis');
+const nodemailer = require('nodemailer');
+const sendMailMock = jest.fn().mockResolvedValue();
+nodemailer.createTransport.mockReturnValue({ sendMail: sendMailMock });
 // return a real (resolved) promise so .catch() exists
 const redisMock = {
   connect: jest.fn().mockResolvedValue(),
@@ -106,6 +110,15 @@ describe('🚀 API Endpoints', () => {
     const res = await request(app).get('/api/requests/resolution');
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual([{ status: 'Closed', count: 5 }]);
+  });
+
+  test('POST /api/contact stores message and sends email', async () => {
+    poolMock.query.mockResolvedValueOnce({ rows: [] });
+    const res = await request(app)
+      .post('/api/contact')
+      .send({ name: 'Jane', email: 'j@example.com', message: 'Hi' });
+    expect(res.statusCode).toBe(200);
+    expect(sendMailMock).toHaveBeenCalled();
   });
 });
 

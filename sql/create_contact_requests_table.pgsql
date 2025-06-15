@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS contact_requests (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  message TEXT NOT NULL,
+  submitted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
