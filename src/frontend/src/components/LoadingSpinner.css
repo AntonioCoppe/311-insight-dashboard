@@ -6,17 +6,32 @@
   padding: 1rem;
 }
 
-.loading-spinner img {
-  width: 48px;
-  height: 48px;
-  animation: logo-spin 1s linear infinite;
+
+.skyline-wrapper {
+  width: 200px;
+  overflow: hidden;
+}
+
+.skyline-progress {
+  width: 0;
+  overflow: hidden;
+  animation: skyline-fill 2s linear infinite;
+}
+
+.skyline-progress img {
+  width: 100%;
+  display: block;
 }
 
 .loading-text {
   margin-top: 0.5rem;
 }
 
-@keyframes logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes skyline-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
