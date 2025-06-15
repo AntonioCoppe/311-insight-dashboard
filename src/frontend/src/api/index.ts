@@ -6,6 +6,7 @@ export interface RecentItem { request_type: string; count: number; }
 export interface HistoricalItem { date: string; request_type?: string; count: number; }
 export interface Feature { type: 'Feature'; properties: { postal_area: string; count: number }; geometry: any; }
 export interface FeatureCollection { type: 'FeatureCollection'; features: Feature[]; }
+export interface StatusCount { status: string; count: number; }
 
 export function getRecent(minutes = 60, types?: string[]) {
   const params: any = { minutes };
@@ -30,5 +31,11 @@ export function getMapData(category: string) {
 export function getYearlyTop(year: number) {
   return axios
     .get<RecentItem[]>(`${BASE}/api/requests/yearly_top`, { params: { year } })
+    .then(res => res.data);
+}
+
+export function getStatusCounts() {
+  return axios
+    .get<StatusCount[]>(`${BASE}/api/requests/resolution`)
     .then(res => res.data);
 }

@@ -17,7 +17,11 @@ const TIMEFRAMES = [
 
 const DEFAULT_CENTER: [number, number] = [43.65, -79.38];
 
-export function MapView() {
+interface MapViewProps {
+  height?: string;
+}
+
+export function MapView({ height = '60vh' }: MapViewProps) {
   const [types, setTypes] = useState<string[]>([]);
   const [category, setCategory] = useState<string>('');
   const [timeframe, setTimeframe] = useState<number>(TIMEFRAMES[0].minutes);
@@ -94,7 +98,7 @@ export function MapView() {
           </select>
         </label>
       </div>
-      <MapContainer center={DEFAULT_CENTER} zoom={11} style={{ height: '400px', width: '100%' }} >
+      <MapContainer center={DEFAULT_CENTER} zoom={11} style={{ height, width: '100%' }} >
         <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {validFeatures.map((f, i) => {
           const coord = centroidData[f.properties.postal_area] as [number, number];

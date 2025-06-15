@@ -163,6 +163,22 @@ app.get('/api/requests/yearly_top', async (req, res) => {
   }
 });
 
+// 4. Resolution status counts
+app.get('/api/requests/resolution', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT status, COUNT(*)::INT AS count
+       FROM requests
+       GROUP BY status
+       ORDER BY count DESC`
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // 3. Map data (unchanged)
 app.get('/api/requests/map', async (req, res) => {
   const category = req.query.category;
