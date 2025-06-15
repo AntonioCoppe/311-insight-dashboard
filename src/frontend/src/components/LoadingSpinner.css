@@ -8,30 +8,34 @@
 
 
 .skyline-wrapper {
+  position: relative;
   width: 200px;
-  overflow: hidden;
 }
 
-.skyline-progress {
-  width: 0;
-  overflow: hidden;
-  animation: skyline-fill 2s linear infinite;
-}
-
-.skyline-progress img {
+.skyline-wrapper img {
   width: 100%;
   display: block;
+}
+
+.skyline-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  animation: skyline-reveal 2s linear infinite;
 }
 
 .loading-text {
   margin-top: 0.5rem;
 }
 
-@keyframes skyline-fill {
+@keyframes skyline-reveal {
   from {
-    width: 0;
+    transform: translateX(0);
   }
   to {
-    width: 100%;
+    transform: translateX(100%);
   }
 }
