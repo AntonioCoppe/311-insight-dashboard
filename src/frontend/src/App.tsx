@@ -23,14 +23,14 @@ function App() {
           <feDisplacementMap in="SourceGraphic" in2="softMap" scale="150" xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </svg>
-      <div className="App">
+      <div className="App page-content">
         <LiquidGlassWrapper className="menu">
           <h1>311 Insight Dashboard</h1>
         </LiquidGlassWrapper>
         <div className="dashboard-grid">
           <HistoricalLineChart />
           <YearlyBarChart />
-          <MapView />
+          <MapView height="60vh" />
         </div>
       </div>
     </>

@@ -98,6 +98,15 @@ describe('🚀 API Endpoints', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body).toHaveProperty('error');
   });
+
+  test('GET /api/requests/resolution returns status counts', async () => {
+    poolMock.query.mockResolvedValueOnce({
+      rows: [{ status: 'Closed', count: 5 }]
+    });
+    const res = await request(app).get('/api/requests/resolution');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([{ status: 'Closed', count: 5 }]);
+  });
 });
 
 

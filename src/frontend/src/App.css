@@ -5,9 +5,13 @@
 
 /* ─────────── Base App Layout ─────────── */
 .App {
+  font-family: sans-serif;
+}
+
+/* shared layout for all pages */
+.page-content {
   margin-left: 240px; /* space for sidebar */
   padding: 1rem;
-  font-family: sans-serif;
 }
 
 /* ─────────── Header / Menu Card ─────────── */
@@ -20,7 +24,7 @@
 /* ─────────── Dashboard Grid (3 columns) ─────────── */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
@@ -36,6 +40,14 @@
 
 .map-card {
   grid-column: 1 / -1;
+}
+
+.historical-line-chart {
+  grid-column: span 2;
+}
+
+.map-page {
+  height: 100vh;
 }
 
 /* ─────────── Date & Map Controls ─────────── */
