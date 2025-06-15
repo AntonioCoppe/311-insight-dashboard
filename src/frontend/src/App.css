@@ -46,6 +46,10 @@
   grid-column: span 2;
 }
 
+.status-bar-chart {
+  grid-column: 1 / -1;
+}
+
 .map-page {
   height: 100vh;
 }

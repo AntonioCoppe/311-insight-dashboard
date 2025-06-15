@@ -9,8 +9,8 @@ export default function StatisticsPage() {
       <div className="dashboard-grid">
         <HistoricalLineChart />
         <YearlyBarChart />
+        <StatusBarChart />
       </div>
-      <StatusBarChart />
     </div>
   );
 }

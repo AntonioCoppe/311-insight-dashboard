@@ -33,7 +33,7 @@ export default function StatusBarChart() {
   };
 
   return (
-    <LiquidGlassWrapper className="chart-card">
+    <LiquidGlassWrapper className="chart-card status-bar-chart">
       {error && <div className="error">{error}</div>}
       {loading ? <div>Loading resolution data…</div> : <Bar data={chartData} />}
     </LiquidGlassWrapper>
