@@ -1,12 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import Sidebar, { SidebarRoute } from './components/Sidebar';
-import MapPage from './components/MapPage';
-import StatisticsPage from './components/StatisticsPage';
-import AboutPage from './components/AboutPage';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import PageCache from './components/PageCache';
+import { BrowserRouter } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -23,12 +20,7 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Sidebar routes={routes} />
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/statistics" element={<StatisticsPage />} />
-        <Route path="/about" element={<AboutPage />} />
-      </Routes>
+      <PageCache />
     </BrowserRouter>
   </React.StrictMode>
 );
