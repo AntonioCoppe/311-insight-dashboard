@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
+import LoadingSpinner from './LoadingSpinner';
 import axios from 'axios';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -35,7 +36,11 @@ export default function StatusBarChart() {
   return (
     <LiquidGlassWrapper className="chart-card">
       {error && <div className="error">{error}</div>}
-      {loading ? <div>Loading resolution data…</div> : <Bar data={chartData} />}
+      {loading ? (
+        <LoadingSpinner text="Loading resolution data…" />
+      ) : (
+        <Bar data={chartData} />
+      )}
     </LiquidGlassWrapper>
   );
 }

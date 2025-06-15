@@ -10,6 +10,7 @@ import {
   Legend,
 } from 'chart.js';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
+import LoadingSpinner from './LoadingSpinner';
 import { getYearlyTop, RecentItem } from '../api';
 import { exportToCSV } from '../utils/exportToCSV';
 
@@ -54,7 +55,11 @@ export default function YearlyBarChart() {
         />
       </label>
       {error && <div className="error">{error}</div>}
-      {loading ? <div>Loading yearly data…</div> : <Bar data={chartData} />}
+      {loading ? (
+        <LoadingSpinner text="Loading yearly data…" />
+      ) : (
+        <Bar data={chartData} />
+      )}
       <button onClick={() => exportToCSV(data, ['request_type', 'count'], 'yearly_top.csv')}>
         Export to CSV
       </button>

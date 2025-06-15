@@ -1,0 +1,22 @@
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.loading-spinner img {
+  width: 48px;
+  height: 48px;
+  animation: logo-spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: 0.5rem;
+}
+
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
