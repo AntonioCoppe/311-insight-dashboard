@@ -4,6 +4,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import 'chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm';
 import axios from 'axios';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
+import LoadingSpinner from './LoadingSpinner';
 import dayjs from 'dayjs';
 import { useRequestTypes } from '../hooks/useRequestTypes';
 import Select from 'react-select';
@@ -155,7 +156,7 @@ export default function HistoricalLineChart() {
       {error && <div className="error">{error}</div>}
 
       {loading ? (
-        <div>Loading historical data…</div>
+        <LoadingSpinner text="Loading historical data…" />
       ) : (
         <Line data={chartData} options={options} />
       )}

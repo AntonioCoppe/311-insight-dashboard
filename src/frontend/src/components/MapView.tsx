@@ -6,6 +6,7 @@ import axios from 'axios';
 import { FeatureCollection } from '../api';
 import centroidData from '../data/postal_centroids_full.json';
 import LiquidGlassWrapper from './LiquidGlassWrapper';
+import LoadingSpinner from './LoadingSpinner';
 
 const TIMEFRAMES = [
   { label: 'Last 1 hour', minutes: 60 },
@@ -56,8 +57,8 @@ export function MapView({ height = '60vh' }: MapViewProps) {
       .finally(() => setLoading(false));
   }, [category, timeframe]);
 
-  if (!types.length) return <div>Loading categories…</div>;
-  if (loading) return <div>Loading map…</div>;
+  if (!types.length) return <LoadingSpinner text="Loading categories…" />;
+  if (loading) return <LoadingSpinner text="Loading map…" />;
   if (error) return <div>{error}</div>;
   if (!geo?.features.length)
     return <div>No data for selected category/timeframe.</div>;
