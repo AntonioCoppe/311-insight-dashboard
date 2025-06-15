@@ -1,3 +1,4 @@
+import React from 'react';
 import React, { useState } from 'react';
 
 export default function AboutPage() {
@@ -38,22 +39,26 @@ export default function AboutPage() {
         across the city.
       </p>
       <h3>Contact Us</h3>
+      <form onSubmit={e => { e.preventDefault(); alert('Thanks for your message!'); }}>
       <form onSubmit={handleSubmit}>
         <div>
           <label>
             Name:<br />
+            <input type="text" required />
             <input type="text" value={name} onChange={e => setName(e.target.value)} required />
           </label>
         </div>
         <div>
           <label>
             Email:<br />
+            <input type="email" required />
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
           </label>
         </div>
         <div>
           <label>
             Message:<br />
+            <textarea required rows={4} />
             <textarea value={message} onChange={e => setMessage(e.target.value)} required rows={4} />
           </label>
         </div>
