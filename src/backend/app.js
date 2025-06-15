@@ -6,6 +6,7 @@ const { createClient } = require('redis');
 const dayjs = require('dayjs');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const nodemailer = require('nodemailer');
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -36,6 +37,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
+
+const transporter = nodemailer.createTransport({
+  host: process.env.MAIL_HOST,
+  port: parseInt(process.env.MAIL_PORT || '587', 10),
+  secure: process.env.MAIL_SECURE === 'true',
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
 
 const io = new Server({
   cors: {
@@ -219,6 +230,32 @@ app.get('/api/requests/types', async (req, res) => {
     res.json(rows.map(r => r.request_type));
   } catch (err) {
     console.error('Error fetching types:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/contact - store a contact message and forward via email
+app.post('/api/contact', async (req, res) => {
+  const { name, email, message } = req.body || {};
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'name, email and message are required' });
+  }
+  try {
+    await pool.query(
+      'INSERT INTO contact_requests(name, email, message) VALUES($1,$2,$3)',
+      [name, email, message]
+    );
+
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM || email,
+      to: 'antonio.coppe@gmail.com',
+      subject: 'New contact request',
+      text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+    });
+
+    res.json({ status: 'ok' });
+  } catch (err) {
+    console.error('Error handling contact request:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

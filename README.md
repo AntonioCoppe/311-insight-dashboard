@@ -61,7 +61,7 @@ A full-stack dashboard to visualize City of Toronto 311 service requests.
 
    ```bash
    cp .env.example .env
-   # Edit .env with your DATABASE_URL and REDIS_URL
+   # Edit .env with your DATABASE_URL, REDIS_URL and mail credentials
    ```
 
 3. **Install dependencies**
@@ -81,16 +81,23 @@ A full-stack dashboard to visualize City of Toronto 311 service requests.
    CREATE USER insight_user WITH ENCRYPTED PASSWORD '<password>';
    CREATE DATABASE insight311 OWNER insight_user;
    \c insight311
-   CREATE TABLE requests (
-     id TEXT PRIMARY KEY,
-     request_type TEXT,
-     ward TEXT,
-     created_at TIMESTAMP,
-     closed_at TIMESTAMP,
-     postal_area TEXT,
-     description TEXT
-   );
-   ```
+  CREATE TABLE requests (
+    id TEXT PRIMARY KEY,
+    request_type TEXT,
+    ward TEXT,
+    created_at TIMESTAMP,
+    closed_at TIMESTAMP,
+    postal_area TEXT,
+    description TEXT
+  );
+  CREATE TABLE contact_requests (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    message TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT NOW()
+  );
+  ```
 
 5. **Generate postal centroids (optional)**
 
